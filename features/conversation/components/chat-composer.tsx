@@ -18,6 +18,8 @@ type ChatComposerProps = {
   placeholder?: string;
   className?: string;
   autoFocus?: boolean;
+  value?: string;
+  onValueChange?: (value: string) => void;
 };
 
 /**
@@ -29,8 +31,14 @@ export function ChatComposer({
   placeholder = "Message ChaiGPT…",
   className,
   autoFocus = false,
+  value: controlledValue,
+  onValueChange,
 }: ChatComposerProps) {
-  const [value, setValue] = React.useState("");
+  const [internalValue, setInternalValue] = React.useState("");
+  const value = controlledValue ?? internalValue;
+  const setValue = onValueChange ?? setInternalValue;
+
+  const [isFocused, setIsFocused] = React.useState(false);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   React.useEffect(() => {
@@ -65,16 +73,23 @@ export function ChatComposer({
       onSubmit={(event) => void handleSubmit(event)}
       className={cn("mx-auto w-full max-w-3xl px-4 pb-4 md:px-6", className)}
     >
-      <InputGroup className="h-auto min-h-14 rounded-3xl border-border/80 bg-background shadow-sm dark:bg-input/40">
+      <InputGroup
+        className={cn(
+          "h-auto min-h-14 rounded-3xl border-border/80 bg-card shadow-sm transition-shadow duration-200",
+          isFocused && "border-primary/50 shadow-[0_0_0_3px_theme(colors.primary/0.12)]"
+        )}
+      >
         <InputGroupTextarea
           ref={textareaRef}
           value={value}
           onChange={(event) => setValue(event.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
           disabled={isSending}
           rows={1}
-          className="max-h-48 min-h-12 py-3.5 pl-4 text-[15px] leading-relaxed"
+          className="max-h-48 min-h-12 py-3.5 pl-4 text-[15px] leading-relaxed placeholder:text-muted-foreground/70"
         />
         <InputGroupAddon align="inline-end" className="pr-2 pb-2 self-end">
           <InputGroupButton
@@ -82,14 +97,17 @@ export function ChatComposer({
             size="icon-sm"
             variant="default"
             disabled={!canSend}
-            className="size-9 rounded-full"
+            className={cn(
+              "size-9 rounded-full transition-all duration-200",
+              canSend ? "scale-100 opacity-100" : "scale-90 opacity-50"
+            )}
             aria-label="Send message"
           >
-            {isSending ? <Spinner /> : <ArrowUpIcon />}
+            {isSending ? <Spinner /> : <ArrowUpIcon className="size-4" />}
           </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>
-      <p className="mt-2 text-center text-xs text-muted-foreground">
+      <p className="mt-2 text-center text-xs text-muted-foreground/70">
         ChaiGPT can make mistakes. Check important info.
       </p>
     </form>

@@ -23,7 +23,11 @@ export function BranchNav({ conversationId }: { conversationId: string }) {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="outline" size="sm" className="gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 rounded-full border-primary/30 bg-primary/5 text-primary hover:bg-primary/10"
+          >
             <GitBranchIcon className="size-3.5" />
             {branches.length} branches
           </Button>
@@ -33,13 +37,23 @@ export function BranchNav({ conversationId }: { conversationId: string }) {
         <DropdownMenuLabel>Branches</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {branches.map((branch) => (
-          <div key={branch.id} className="flex items-center justify-between gap-2 px-2 py-1.5">
+          <div
+            key={branch.id}
+            className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-accent"
+          >
             <Link
               href={`/c/${branch.id}`}
-              className={cn("flex-1 truncate text-sm hover:underline", branch.id === conversationId && "font-semibold")}
+              className={cn(
+                "flex-1 truncate text-sm hover:underline",
+                branch.id === conversationId && "font-semibold text-primary"
+              )}
             >
               {branch.title}
-              {!branch.parentConversationId ? <Badge variant="outline" className="ml-1.5 text-[10px]">root</Badge> : null}
+              {!branch.parentConversationId ? (
+                <Badge className="ml-1.5 border-primary/30 bg-primary/10 text-[10px] text-primary">
+                  root
+                </Badge>
+              ) : null}
             </Link>
             <div className="flex items-center gap-1">
               <Button
@@ -53,7 +67,11 @@ export function BranchNav({ conversationId }: { conversationId: string }) {
                 <PencilIcon className="size-3.5" />
               </Button>
               {branch.parentConversationId ? (
-                <Button type="button" variant="ghost" size="icon-sm" onClick={() => deleteBranch.mutate(branch.id)}>
+                <Button
+                  type="button" variant="ghost" size="icon-sm"
+                  className="hover:text-destructive"
+                  onClick={() => deleteBranch.mutate(branch.id)}
+                >
                   <Trash2Icon className="size-3.5" />
                 </Button>
               ) : null}

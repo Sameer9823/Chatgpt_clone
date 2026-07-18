@@ -10,7 +10,7 @@ export function ChatShell({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset className="min-h-svh overflow-hidden">
+      <SidebarInset className="min-h-svh overflow-hidden bg-background">
         {children}
       </SidebarInset>
     </SidebarProvider>

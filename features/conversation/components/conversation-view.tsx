@@ -4,7 +4,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useQueryClient } from '@tanstack/react-query';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import { useChat } from "@ai-sdk/react"
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useConversations } from '../hooks/use-conversation';
 import { useCreateBranch } from '../hooks/use-branches';
 import { queryKeys } from '../utils/query-keys';
@@ -27,6 +27,7 @@ export const ConversationView = ({ conversationId, initialMessages }: Conversati
     const queryClient = useQueryClient();
     const { data: conversations } = useConversations();
     const createBranch = useCreateBranch(conversationId);
+    const [draft, setDraft] = useState("");
 
     const transport = useMemo(() => new DefaultChatTransport({
         api: "/api/chat",
@@ -61,7 +62,7 @@ export const ConversationView = ({ conversationId, initialMessages }: Conversati
 
     return (
         <div className="flex h-full min-h-0 flex-1 flex-col">
-            <header className="flex h-14 shrink-0 items-center gap-2 border-b px-3">
+            <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border/80 bg-background/80 px-3 backdrop-blur-md">
                 <SidebarTrigger />
                 <Separator orientation="vertical" className="mx-1 h-4" />
                 <h1 className="flex-1 truncate text-sm font-medium">{title}</h1>
@@ -69,14 +70,17 @@ export const ConversationView = ({ conversationId, initialMessages }: Conversati
             </header>
 
             {messages.length === 0 ? (
-                <ChatEmpty />
+                <ChatEmpty onPick={(prompt) => setDraft(prompt)} />
             ) : (
                 <ChatMessages messages={messages} status={status} onBranch={handleBranch} />
             )}
 
             <ChatComposer
+                value={draft}
+                onValueChange={setDraft}
                 onSend={(text) => {
                     void sendMessage({ text });
+                    setDraft("");
                 }}
                 isSending={status !== "ready"}
                 autoFocus

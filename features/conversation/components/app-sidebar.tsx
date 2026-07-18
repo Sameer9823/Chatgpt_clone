@@ -4,10 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   MoreHorizontalIcon,
+  MoonIcon,
   PencilIcon,
   PinIcon,
   PinOffIcon,
   PlusIcon,
+  SunIcon,
   Trash2Icon,
 } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
@@ -54,10 +56,7 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { data: conversations, isLoading } = useConversations();
 
-  
-// Get the active conversation id from the pathname (e.g. /c/123)
-// pathname.split("/")[2] is the third part of the pathname (the conversation id)
-//  firstparam = / , secondparam = c , thirdparam = 123
+  // Get the active conversation id from the pathname (e.g. /c/123)
   const activeId = pathname.startsWith("/c/")
     ? pathname.split("/")[2]
     : undefined;
@@ -72,14 +71,20 @@ export function AppSidebar() {
               className="font-semibold tracking-tight"
               render={<Link href="/chat" />}
             >
-              <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm text-primary-foreground">
+              <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
                 C
               </span>
-              <span>ChaiGPT</span>
+              <span>
+                chai<span className="text-primary">gpt</span>
+              </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="New chat" render={<Link href="/chat" />}>
+            <SidebarMenuButton
+              tooltip="New chat"
+              render={<Link href="/chat" />}
+              className="border border-dashed border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
+            >
               <PlusIcon />
               <span>New chat</span>
             </SidebarMenuButton>
@@ -134,7 +139,9 @@ function ChatList({
 
   if (!conversations?.length) {
     return (
-      <p className="px-2 py-1.5 text-xs text-muted-foreground">No chats yet</p>
+      <p className="px-2 py-1.5 text-xs text-muted-foreground">
+        No chats yet — start one above.
+      </p>
     );
   }
 
@@ -172,13 +179,22 @@ function ChatItem({
   }
 
   return (
-    <SidebarMenuItem>
+    <SidebarMenuItem className="group/item relative">
+      {isActive ? (
+        <span className="absolute -left-2 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary" />
+      ) : null}
       <SidebarMenuButton
         isActive={isActive}
         tooltip={conversation.title}
         render={<Link href={`/c/${conversation.id}`} />}
-        className={cn(isActive && "font-medium")}
+        className={cn(
+          "transition-colors",
+          isActive && "bg-primary/10 font-medium text-foreground"
+        )}
       >
+        {conversation.isPinned ? (
+          <PinIcon className="size-3.5 text-primary" />
+        ) : null}
         <span className="truncate">{conversation.title}</span>
       </SidebarMenuButton>
 
@@ -227,6 +243,7 @@ function ChatItem({
 /** Footer menu with theme toggle and Clerk user account button. */
 function SidebarFooterMenu() {
   const { resolvedTheme, setTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   return (
     <SidebarMenu>
@@ -235,14 +252,15 @@ function SidebarFooterMenu() {
           type="button"
           variant="ghost"
           size="sm"
-          className="w-full justify-start"
-          onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+          className="w-full justify-start gap-2 text-muted-foreground"
+          onClick={() => setTheme(isDark ? "light" : "dark")}
         >
-          Toggle theme
+          {isDark ? <SunIcon className="size-4" /> : <MoonIcon className="size-4" />}
+          {isDark ? "Light mode" : "Dark mode"}
         </Button>
       </SidebarMenuItem>
       <SidebarMenuItem>
-        <div className="flex items-center gap-2 px-1 py-1.5">
+        <div className="flex items-center gap-2 rounded-md px-1 py-1.5 hover:bg-sidebar-accent">
           <UserButton
             appearance={{
               elements: {
