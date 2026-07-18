@@ -70,7 +70,7 @@ export function AppSidebar() {
             <SidebarMenuButton
               size="lg"
               className="font-semibold tracking-tight"
-              render={<Link href="/" />}
+              render={<Link href="/chat" />}
             >
               <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm text-primary-foreground">
                 C
@@ -79,7 +79,7 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="New chat" render={<Link href="/" />}>
+            <SidebarMenuButton tooltip="New chat" render={<Link href="/chat" />}>
               <PlusIcon />
               <span>New chat</span>
             </SidebarMenuButton>

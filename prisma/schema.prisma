@@ -29,7 +29,7 @@ model Conversation {
   id            String   @id @default(cuid())
   userId        String
   title         String   @default("New Chat")
-  model         String? // e.g. openai/gpt-4.1 — per-thread model override
+  model         String?
   systemPrompt  String?  @db.Text
   isPinned      Boolean  @default(false)
   isArchived    Boolean  @default(false)
@@ -37,12 +37,20 @@ model Conversation {
   updatedAt     DateTime @updatedAt
   lastMessageAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // --- branching ---
+  parentConversationId String?
+  branchPointMessageId String? // id of the message this branch forked from
+  rootConversationId   String? // top-of-tree id, denormalized for one-query tree lookups
 
+  parent   Conversation?  @relation("ConversationBranches", fields: [parentConversationId], references: [id], onDelete: SetNull)
+  branches Conversation[] @relation("ConversationBranches")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages Message[]
 
   @@index([userId, lastMessageAt(sort: Desc)])
   @@index([userId, isPinned, lastMessageAt(sort: Desc)])
+  @@index([rootConversationId])
 }
 
 enum MessageRole {

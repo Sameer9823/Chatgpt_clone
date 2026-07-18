@@ -6,11 +6,13 @@ import { DefaultChatTransport, type UIMessage } from 'ai';
 import { useChat } from "@ai-sdk/react"
 import React, { useMemo } from 'react'
 import { useConversations } from '../hooks/use-conversation';
+import { useCreateBranch } from '../hooks/use-branches';
 import { queryKeys } from '../utils/query-keys';
 import { toast } from 'sonner';
 import { ChatEmpty } from './chat-empty';
 import { ChatMessages } from './chat-messages';
 import { ChatComposer } from './chat-composer';
+import { BranchNav } from './branch-nav';
 
 type ConversationViewProps = {
     conversationId: string;
@@ -24,6 +26,7 @@ export const ConversationView = ({ conversationId, initialMessages }: Conversati
 
     const queryClient = useQueryClient();
     const { data: conversations } = useConversations();
+    const createBranch = useCreateBranch(conversationId);
 
     const transport = useMemo(() => new DefaultChatTransport({
         api: "/api/chat",
@@ -50,18 +53,25 @@ export const ConversationView = ({ conversationId, initialMessages }: Conversati
     const title =
     conversations?.find((item) => item.id === conversationId)?.title ?? "Chat";
 
+    /** Opens a branch from the given message, prompting for an optional name. */
+    function handleBranch(messageId: string) {
+        const name = window.prompt("Name this branch (optional)");
+        createBranch.mutate({ messageId, name: name ?? undefined });
+    }
+
     return (
         <div className="flex h-full min-h-0 flex-1 flex-col">
             <header className="flex h-14 shrink-0 items-center gap-2 border-b px-3">
                 <SidebarTrigger />
                 <Separator orientation="vertical" className="mx-1 h-4" />
-                <h1 className="truncate text-sm font-medium">{title}</h1>
+                <h1 className="flex-1 truncate text-sm font-medium">{title}</h1>
+                <BranchNav conversationId={conversationId} />
             </header>
 
             {messages.length === 0 ? (
                 <ChatEmpty />
             ) : (
-                <ChatMessages messages={messages} status={status} />
+                <ChatMessages messages={messages} status={status} onBranch={handleBranch} />
             )}
 
             <ChatComposer

@@ -2,6 +2,7 @@
 
 import { isTextUIPart, isToolUIPart, type UIMessage } from "ai";
 import type { ChatStatus } from "ai";
+import { GitBranchIcon } from "lucide-react";
 
 import {
   Conversation,
@@ -35,14 +36,16 @@ function getMessageText(message: UIMessage) {
 type ChatMessagesProps = {
   messages: UIMessage[];
   status: ChatStatus;
+  onBranch: (messageId: string) => void;
 };
 
 /**
  * Renders the conversation message list — interleaving markdown text with
  * inline tool-call cards (e.g. web search) in the order they occurred — plus
- * a loading indicator while a response is pending.
+ * a loading indicator while a response is pending. Hovering a message
+ * reveals a "Branch" action to fork the conversation from that point.
  */
-export function ChatMessages({ messages, status }: ChatMessagesProps) {
+export function ChatMessages({ messages, status, onBranch }: ChatMessagesProps) {
   const isWaiting =
     status === "submitted" && messages.at(-1)?.role === "user";
 
@@ -50,7 +53,7 @@ export function ChatMessages({ messages, status }: ChatMessagesProps) {
     <Conversation>
       <ConversationContent className="py-8">
         {messages.map((message) => (
-          <Message key={message.id} from={message.role}>
+          <Message key={message.id} from={message.role} className="relative">
             <MessageContent>
               {message.role === "assistant" ? (
                 <AssistantParts message={message} />
@@ -58,6 +61,16 @@ export function ChatMessages({ messages, status }: ChatMessagesProps) {
                 <MessageResponse>{getMessageText(message)}</MessageResponse>
               )}
             </MessageContent>
+
+            <button
+              type="button"
+              onClick={() => onBranch(message.id)}
+              title="Branch from here"
+              className="absolute -top-2 right-2 hidden items-center gap-1 rounded-full border bg-background px-2 py-1 text-xs text-muted-foreground shadow-sm hover:text-foreground group-hover:flex"
+            >
+              <GitBranchIcon className="size-3" />
+              Branch
+            </button>
           </Message>
         ))}
 
