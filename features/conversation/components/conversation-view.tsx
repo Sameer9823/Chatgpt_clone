@@ -38,7 +38,7 @@ export const ConversationView = ({ conversationId, initialMessages }: Conversati
         })
     }), []);
 
-    const { messages, sendMessage, status } = useChat({
+    const { messages, sendMessage, status, regenerate } = useChat({
         id: conversationId,
         messages: initialMessages,
         transport,
@@ -54,15 +54,36 @@ export const ConversationView = ({ conversationId, initialMessages }: Conversati
     const title =
     conversations?.find((item) => item.id === conversationId)?.title ?? "Chat";
 
-    /** Opens a branch from the given message, prompting for an optional name. */
-    function handleBranch(messageId: string) {
-        const name = window.prompt("Name this branch (optional)");
-        createBranch.mutate({ messageId, name: name ?? undefined });
+    /**
+     * Creates a branch from the given message. Name comes from the toast
+     * input in `ChatMessages` (via `onBranch`), not a blocking native prompt.
+     */
+    function handleBranch(messageId: string, name?: string) {
+        createBranch.mutate(
+            { messageId, name },
+            {
+                onSuccess: () => {
+                    void queryClient.invalidateQueries({
+                        queryKey: queryKeys.conversations.all,
+                    });
+                },
+                onError: () => {
+                    toast.error("Couldn't create branch — try again");
+                },
+            }
+        );
+    }
+
+    /** Regenerates the assistant's response for the given message. */
+    function handleRegenerate(messageId: string) {
+        void regenerate({ messageId }).catch(() => {
+            toast.error("Couldn't regenerate — try again");
+        });
     }
 
     return (
-        <div className="flex h-full min-h-0 flex-1 flex-col">
-            <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border/80 bg-background/80 px-3 backdrop-blur-md">
+       <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-border/80 bg-background/80 px-3 backdrop-blur-md">
                 <SidebarTrigger />
                 <Separator orientation="vertical" className="mx-1 h-4" />
                 <h1 className="flex-1 truncate text-sm font-medium">{title}</h1>
@@ -72,7 +93,12 @@ export const ConversationView = ({ conversationId, initialMessages }: Conversati
             {messages.length === 0 ? (
                 <ChatEmpty onPick={(prompt) => setDraft(prompt)} />
             ) : (
-                <ChatMessages messages={messages} status={status} onBranch={handleBranch} />
+                <ChatMessages
+                    messages={messages}
+                    status={status}
+                    onBranch={handleBranch}
+                    onRegenerate={handleRegenerate}
+                />
             )}
 
             <ChatComposer

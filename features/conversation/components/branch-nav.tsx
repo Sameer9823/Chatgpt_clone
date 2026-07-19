@@ -6,7 +6,12 @@ import { GitBranchIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useBranches, useDeleteBranch, useRenameBranch } from "@/features/conversation/hooks/use-branches";
@@ -34,50 +39,52 @@ export function BranchNav({ conversationId }: { conversationId: string }) {
         }
       />
       <DropdownMenuContent align="end" className="w-72">
-        <DropdownMenuLabel>Branches</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {branches.map((branch) => (
-          <div
-            key={branch.id}
-            className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-accent"
-          >
-            <Link
-              href={`/c/${branch.id}`}
-              className={cn(
-                "flex-1 truncate text-sm hover:underline",
-                branch.id === conversationId && "font-semibold text-primary"
-              )}
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Branches</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {branches.map((branch) => (
+            <div
+              key={branch.id}
+              className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-accent"
             >
-              {branch.title}
-              {!branch.parentConversationId ? (
-                <Badge className="ml-1.5 border-primary/30 bg-primary/10 text-[10px] text-primary">
-                  root
-                </Badge>
-              ) : null}
-            </Link>
-            <div className="flex items-center gap-1">
-              <Button
-                type="button" variant="ghost" size="icon-sm"
-                onClick={() => {
-                  const next = window.prompt("Rename branch", branch.title);
-                  if (!next || next.trim() === branch.title) return;
-                  renameBranch.mutate({ id: branch.id, title: next });
-                }}
+              <Link
+                href={`/c/${branch.id}`}
+                className={cn(
+                  "flex-1 truncate text-sm hover:underline",
+                  branch.id === conversationId && "font-semibold text-primary"
+                )}
               >
-                <PencilIcon className="size-3.5" />
-              </Button>
-              {branch.parentConversationId ? (
+                {branch.title}
+                {!branch.parentConversationId ? (
+                  <Badge className="ml-1.5 border-primary/30 bg-primary/10 text-[10px] text-primary">
+                    root
+                  </Badge>
+                ) : null}
+              </Link>
+              <div className="flex items-center gap-1">
                 <Button
                   type="button" variant="ghost" size="icon-sm"
-                  className="hover:text-destructive"
-                  onClick={() => deleteBranch.mutate(branch.id)}
+                  onClick={() => {
+                    const next = window.prompt("Rename branch", branch.title);
+                    if (!next || next.trim() === branch.title) return;
+                    renameBranch.mutate({ id: branch.id, title: next });
+                  }}
                 >
-                  <Trash2Icon className="size-3.5" />
+                  <PencilIcon className="size-3.5" />
                 </Button>
-              ) : null}
+                {branch.parentConversationId ? (
+                  <Button
+                    type="button" variant="ghost" size="icon-sm"
+                    className="hover:text-destructive"
+                    onClick={() => deleteBranch.mutate(branch.id)}
+                  >
+                    <Trash2Icon className="size-3.5" />
+                  </Button>
+                ) : null}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
