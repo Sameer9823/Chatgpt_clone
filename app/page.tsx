@@ -12,6 +12,8 @@ import {
   SparklesIcon,
   SquareArrowOutUpRightIcon,
 } from "lucide-react";
+import { FaGithub } from "react-icons/fa";
+
 
 import { Button } from "@/components/ui/button";
 
@@ -123,6 +125,17 @@ export default async function LandingPage() {
           <span className="text-lg font-semibold tracking-tight">
             chai<span className="text-[#E7A93D]">gpt</span>
           </span>
+
+         
+          <a
+            href="https://github.com/Sameer9823/Chatgpt_clone"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2"
+          >
+            <span className="sr-only">GitHub</span>
+            <FaGithub className="size-[18px]" />
+          </a>
 
           <Button
             render={<Link href={primaryHref} />}
@@ -449,14 +462,15 @@ export default async function LandingPage() {
               Pick up any thread, anytime.
             </p>
           </div>
-          <Button
-            render={<Link href={primaryHref} />}
-            variant="outline"
-            className="border-[#3A3022] bg-transparent text-[#F4EEE3] hover:bg-[#211A12] hover:text-[#F4EEE3]"
+          <a
+            href="https://github.com/Sameer9823/Chatgpt_clone"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2"
           >
-            {primaryLabel}
-            <SquareArrowOutUpRightIcon />
-          </Button>
+            <span className="sr-only">GitHub</span>
+            <FaGithub className="size-[18px]" />
+          </a>
         </div>
       </footer>
     </div>
