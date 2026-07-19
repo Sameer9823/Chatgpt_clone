@@ -71,17 +71,40 @@ export async function listConversations(): Promise<ConversationListItem[]> {
 }
 
 /**
- * Creates a new conversation for the current user.
+ * Creates a new conversation for the current user — unless an untouched
+ * "New Chat" (default title, no messages, not a branch) already exists,
+ * in which case that one is reused. Prevents a fresh empty row being
+ * created every time the user hits "New chat" or reloads `/chat`.
  *
- * @param title - Optional title; defaults to "New Chat".
+ * @param title - Optional title; defaults to "New Chat". Reuse only
+ * applies when no custom title is passed — an explicit title always
+ * creates a new conversation.
  */
 export async function createConversation(title = "New Chat") {
     const user = await requireUser();
+    const trimmedTitle = title.trim() || "New Chat";
+
+    if (trimmedTitle === "New Chat") {
+        const existingEmpty = await prisma.conversation.findFirst({
+            where: {
+                userId: user.id,
+                title: "New Chat",
+                isArchived: false,
+                parentConversationId: null,
+                messages: { none: {} },
+            },
+            orderBy: { createdAt: "desc" },
+        });
+
+        if (existingEmpty) {
+            return existingEmpty;
+        }
+    }
 
     return prisma.conversation.create({
         data: {
             userId: user.id,
-            title: title.trim() || "New Chat",
+            title: trimmedTitle,
         },
     });
 }

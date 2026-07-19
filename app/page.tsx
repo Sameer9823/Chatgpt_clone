@@ -4,6 +4,7 @@ import { Fraunces } from "next/font/google";
 import { auth } from "@clerk/nextjs/server";
 import {
   ArrowRightIcon,
+  ChevronDownIcon,
   GitBranchIcon,
   GlobeIcon,
   MessageCircleIcon,
@@ -57,11 +58,30 @@ const STEPS = [
   },
 ] as const;
 
+const FAQS = [
+  {
+    q: "How is branching different from just editing a message?",
+    a: "Editing overwrites history — the earlier version is gone. Branching keeps the original thread exactly as it was and opens a fresh path alongside it, so you can compare both later.",
+  },
+  {
+    q: "Does it always search the web?",
+    a: "No — it decides mid-reply, the same way you would. If a question needs current information, it reaches for a search; if it doesn't, it just answers.",
+  },
+  {
+    q: "Can I go back to an earlier branch anytime?",
+    a: "Yes. Every branch stays in your sidebar as its own thread — nothing is deleted or archived just because you started exploring a different direction.",
+  },
+  {
+    q: "Is there a limit to how many times I can branch?",
+    a: "No hard limit. Some conversations end up with a handful of branches off a single tricky question — that's the whole point.",
+  },
+] as const;
+
 /**
  * Public marketing landing page at `/`. Shown to everyone, signed in or
  * not — signed-in visitors get an "Open chat" shortcut instead of "Log in".
- * Single-file on purpose: everything (styles included) lives here so it can
- * stay a plain async server component alongside the Clerk auth check.
+ * Navigation is intentionally minimal (logo + one CTA only) so discovery
+ * happens by scrolling the story top to bottom, not by jumping via nav links.
  */
 export default async function LandingPage() {
   const { userId } = await auth();
@@ -86,26 +106,23 @@ export default async function LandingPage() {
         }
         .animate-typing-dot { animation: typing-dot 1.1s ease-in-out infinite; }
 
+        @keyframes bob {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(6px); }
+        }
+        .animate-bob { animation: bob 2s ease-in-out infinite; }
+
         @media (prefers-reduced-motion: reduce) {
-          .animate-blob-drift, .animate-typing-dot { animation: none; }
+          .animate-blob-drift, .animate-typing-dot, .animate-bob { animation: none; }
         }
       `}</style>
 
-      {/* ---------- Nav ---------- */}
+      {/* ---------- Nav: logo + single CTA only, no section jump-links ---------- */}
       <header className="sticky top-0 z-50 border-b border-[#241D14] bg-[#15110D]/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 sm:px-8">
           <span className="text-lg font-semibold tracking-tight">
             chai<span className="text-[#E7A93D]">gpt</span>
           </span>
-
-          <nav className="hidden items-center gap-8 text-sm text-[#CBBEA8] md:flex">
-            <a href="#features" className="transition-colors hover:text-[#F4EEE3]">
-              Features
-            </a>
-            <a href="#how-it-works" className="transition-colors hover:text-[#F4EEE3]">
-              How it works
-            </a>
-          </nav>
 
           <Button
             render={<Link href={primaryHref} />}
@@ -129,7 +146,7 @@ export default async function LandingPage() {
           style={{ animationDelay: "-7s" }}
         />
 
-        <main className="relative mx-auto grid max-w-6xl gap-16 px-6 pt-16 pb-24 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:pt-24">
+        <main className="relative mx-auto grid max-w-6xl gap-16 px-6 pt-16 pb-16 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:pt-24">
           <div className="animate-in fade-in slide-in-from-bottom-3 duration-700">
             <p className="inline-flex items-center gap-1.5 rounded-full border border-[#3A3022] bg-[#1A1510] px-3 py-1 text-xs font-medium tracking-wide text-[#B4A48D] uppercase">
               A chat assistant that stays out of your way
@@ -157,14 +174,6 @@ export default async function LandingPage() {
               >
                 {primaryHref === "/chat" ? primaryLabel : "Log in to start chatting"}
                 <ArrowRightIcon />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                render={<a href="#features" />}
-                className="border-[#3A3022] bg-transparent text-[#F4EEE3] hover:bg-[#211A12] hover:text-[#F4EEE3]"
-              >
-                See how it works
               </Button>
             </div>
 
@@ -285,41 +294,49 @@ export default async function LandingPage() {
             </div>
           </div>
         </main>
+
+        {/* Scroll cue — replaces the old "See how it works" jump-link button */}
+        <div className="relative flex justify-center pb-10">
+          <span className="flex flex-col items-center gap-1.5 text-[11px] tracking-wide text-[#7A6C56] uppercase">
+            Keep scrolling
+            <ChevronDownIcon className="animate-bob size-4" />
+          </span>
+        </div>
+
+        {/* ---------- Features ---------- */}
+        <section className="border-t border-[#241D14] bg-[#1A1510]">
+          <div className="mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-24">
+            <div className="max-w-xl">
+              <p className="text-xs font-medium tracking-[0.2em] text-[#8A7C66] uppercase">
+                Why it feels different
+              </p>
+              <h2 className={`${fraunces.className} mt-3 text-3xl font-medium sm:text-4xl`}>
+                Built around how conversations actually go
+              </h2>
+            </div>
+
+            <div className="mt-12 grid gap-5 sm:grid-cols-3">
+              {FEATURES.map(({ icon: Icon, title, body }) => (
+                <div
+                  key={title}
+                  className="group h-full rounded-2xl border border-[#3A3022] bg-[#211A12] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#E7A93D]/50 hover:shadow-[0_20px_50px_-25px_rgba(231,169,61,0.35)]"
+                >
+                  <div className="inline-flex size-10 items-center justify-center rounded-xl bg-[#E7A93D]/10 text-[#E7A93D] transition-colors group-hover:bg-[#E7A93D]/20">
+                    <Icon className="size-5" />
+                  </div>
+                  <h3 className={`${fraunces.className} mt-5 text-xl font-medium`}>
+                    {title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[#B4A48D]">{body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       </div>
 
-      {/* ---------- Features ---------- */}
-      <section id="features" className="scroll-mt-16 border-t border-[#241D14] bg-[#1A1510]">
-        <div className="mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-24">
-          <div className="max-w-xl">
-            <p className="text-xs font-medium tracking-[0.2em] text-[#8A7C66] uppercase">
-              Why it feels different
-            </p>
-            <h2 className={`${fraunces.className} mt-3 text-3xl font-medium sm:text-4xl`}>
-              Built around how conversations actually go
-            </h2>
-          </div>
-
-          <div className="mt-12 grid gap-5 sm:grid-cols-3">
-            {FEATURES.map(({ icon: Icon, title, body }) => (
-              <div
-                key={title}
-                className="group h-full rounded-2xl border border-[#3A3022] bg-[#211A12] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#E7A93D]/50 hover:shadow-[0_20px_50px_-25px_rgba(231,169,61,0.35)]"
-              >
-                <div className="inline-flex size-10 items-center justify-center rounded-xl bg-[#E7A93D]/10 text-[#E7A93D] transition-colors group-hover:bg-[#E7A93D]/20">
-                  <Icon className="size-5" />
-                </div>
-                <h3 className={`${fraunces.className} mt-5 text-xl font-medium`}>
-                  {title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-[#B4A48D]">{body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ---------- How it works ---------- */}
-      <section id="how-it-works" className="scroll-mt-16 border-t border-[#241D14]">
+      <section className="border-t border-[#241D14]">
         <div className="mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-24">
           <div className="max-w-xl">
             <p className="text-xs font-medium tracking-[0.2em] text-[#8A7C66] uppercase">
@@ -348,6 +365,48 @@ export default async function LandingPage() {
                 <p className="mt-2 max-w-xs text-sm leading-relaxed text-[#B4A48D]">
                   {step.body}
                 </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- Quote / proof section ---------- */}
+      <section className="border-t border-[#241D14] bg-[#1A1510]">
+        <div className="mx-auto max-w-3xl px-6 py-20 text-center sm:px-8 sm:py-24">
+          <p className="text-xs font-medium tracking-[0.2em] text-[#8A7C66] uppercase">
+            Built for the messy part of thinking
+          </p>
+          <blockquote
+            className={`${fraunces.className} mt-6 text-2xl leading-snug font-medium text-balance italic sm:text-3xl`}
+          >
+            &ldquo;The best answer to a hard question is rarely the first one —
+            it&rsquo;s the third one, after two branches you didn&rsquo;t
+            expect to need.&rdquo;
+          </blockquote>
+          <p className="mt-6 text-sm text-[#8A7C66]">
+            The idea behind every fork in ChaiGpt
+          </p>
+        </div>
+      </section>
+
+      {/* ---------- FAQ ---------- */}
+      <section className="border-t border-[#241D14]">
+        <div className="mx-auto max-w-3xl px-6 py-20 sm:px-8 sm:py-24">
+          <div className="max-w-xl">
+            <p className="text-xs font-medium tracking-[0.2em] text-[#8A7C66] uppercase">
+              Questions
+            </p>
+            <h2 className={`${fraunces.className} mt-3 text-3xl font-medium sm:text-4xl`}>
+              Good to know
+            </h2>
+          </div>
+
+          <div className="mt-10 divide-y divide-[#241D14] border-t border-b border-[#241D14]">
+            {FAQS.map(({ q, a }) => (
+              <div key={q} className="py-6">
+                <h3 className="text-base font-medium text-[#F4EEE3]">{q}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#B4A48D]">{a}</p>
               </div>
             ))}
           </div>

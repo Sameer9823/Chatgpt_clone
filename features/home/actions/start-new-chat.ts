@@ -1,23 +1,15 @@
 "use server";
 
-import { requireUser } from "@/features/auth/action/require-user";
-import { prisma } from "@/lib/db";
-
+import { createConversation } from "@/features/conversation/actions/conversation-actions";
 
 /**
- * Server action that creates a new conversation titled "New Chat".
+ * Starts a chat from the home page — reuses an existing untouched
+ * "New Chat" if one exists, otherwise creates a fresh one. Prevents a new
+ * empty conversation being created every time this page loads/reloads.
  *
- * @returns The ID of the newly created conversation.
+ * @returns The ID of the conversation to redirect into.
  */
-export async function startNewChat(){
-    const user = await requireUser();
-
-    const conversation = await prisma.conversation.create({
-        data:{
-            userId:user.id,
-            title:"New Chat"
-        }
-    });
-
+export async function startNewChat() {
+    const conversation = await createConversation();
     return conversation.id;
 }

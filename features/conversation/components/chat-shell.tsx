@@ -7,7 +7,7 @@ export function ChatShell({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset className="h-dvh overflow-hidden bg-background">
+      <SidebarInset className="h-dvh overflow-hidden overscroll-behavior-contain bg-background">
         {children}
       </SidebarInset>
     </SidebarProvider>
